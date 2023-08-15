@@ -41,5 +41,22 @@ class HomeViewController: UIViewController {
             self.startButton.alpha = 1
         }
     }
+
+    @IBAction func didTapButton() {
+        let vc = storyboard?.instantiateViewController(withIdentifier: "navigation_scene") as! UINavigationController
+        
+        vc.modalPresentationStyle = .fullScreen
+        
+        // Add a dismiss button to the navigation bar of the presented view controller
+        let dismissButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(dismissViewController))
+        vc.topViewController?.navigationItem.leftBarButtonItem = dismissButton
+        
+        
+        present(vc, animated: true)
+    }
+    
+    @objc func dismissViewController() {
+        dismiss(animated: true, completion: nil)
+    }
     
 }
