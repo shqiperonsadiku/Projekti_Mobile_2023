@@ -18,6 +18,14 @@ class ViewController: UIViewController {
 
     private var models = [ToDoListItem]()
 
+    let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -29,7 +37,30 @@ class ViewController: UIViewController {
         tableView.dataSource = self
         tableView.frame = view.bounds
 
+        view.addSubview(stackView)
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: view.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        stackView.addArrangedSubview(tableView)
+
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
+    }
+
+     @objc private func textFieldDidChange(_ textField: UITextField) {
+        guard let alertController = presentedViewController as? UIAlertController,
+              let submitAction = alertController.actions.last else {
+            return
+        }
+        
+        if let text = textField.text, !text.isEmpty {
+            submitAction.isEnabled = text.count <= 40
+        } else {
+            submitAction.isEnabled = false
+        }
     }
 
     @objc private func didTapAdd() {
@@ -79,6 +110,37 @@ class ViewController: UIViewController {
         return cell
     }
 
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let item = models[indexPath.row]
+        let sheet = UIAlertController(title: "Edit Item", message: nil, preferredStyle: .actionSheet)
+        
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        sheet.addAction(UIAlertAction(title: "Edit", style: .default, handler: {_ in
+            // MARK: you are WORKING IN HERE
+            let alert = UIAlertController(title: "Edit Item", message: "Edit your item", preferredStyle: .alert)
+            
+            alert.addTextField(configurationHandler: nil)
+            alert.textFields?.first?.text = item.name
+            alert.addAction(UIAlertAction(title: "Save", style: .cancel, handler: {[weak self]_ in
+                guard let field = alert.textFields?.first, let newName = field.text, !newName.isEmpty else {
+                    return
+                }
+                
+                self?.updateItem(item: item, newName: newName)
+            }))
+            
+            
+            self.present(alert, animated: true)
+            
+        }))
+        sheet.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: {[weak self] _ in
+            self?.deleteItem(item: item)
+        }))
+        
+        present(sheet, animated: true)
+    }
+
     // MARK: Core Data functions
     
     func createItem(name: String) {
@@ -89,7 +151,6 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
-            showAlert(with: "Task created successfully")
         }
         catch {
             
@@ -101,7 +162,6 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
-            showAlert(with: "Task deleted successfully")
         }
         catch {
             
@@ -113,7 +173,6 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
-            showAlert(with: "Item updated successfully")
         }
         catch {
             // Handle error
