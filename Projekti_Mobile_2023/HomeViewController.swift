@@ -16,6 +16,9 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .lightGray
         // Do any additional setup after loading the view.
+        // Start the animation
+        animateLabelFromTop()
+        animateButtonFromBottom()
     }
 
     private func animateLabelFromTop() {
