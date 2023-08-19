@@ -7,8 +7,10 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSource {
 
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     let tableView: UITableView = {
         let table = UITableView()
         table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -141,6 +143,13 @@ class ViewController: UIViewController {
         present(sheet, animated: true)
     }
 
+    // Alert function
+    func showAlert(with message: String) {
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+
     // MARK: Core Data functions
     
     func createItem(name: String) {
@@ -151,9 +160,10 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
+            showAlert(with: "Task created successfully")
         }
         catch {
-            
+            print("Task failed to create!")
         }
     }
     
@@ -162,9 +172,10 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
+            showAlert(with: "Task deleted successfully")
         }
         catch {
-            
+            print("Task failed to delete!")
         }
     }
     
@@ -173,9 +184,10 @@ class ViewController: UIViewController {
         do {
             try context.save()
             getAllItems()
+            showAlert(with: "Task updated successfully")
         }
         catch {
-            // Handle error
+           print("Task failed to update!")
         }
     }
 
