@@ -10,6 +10,14 @@ import UIKit
 class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSource {
 
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+
+    let filterSegmentedControl: UISegmentedControl = {
+        let segmentedControl = UISegmentedControl(items: ["All", "Today"])
+        //segmentedControl.addTarget(ViewController.self, action: #selector(filterSegmentChanged(_:)), for: .valueChanged)
+        segmentedControl.addTarget(self, action: #selector(filterSegmentChanged(_:)), for: .valueChanged)
+        segmentedControl.selectedSegmentIndex = 0
+        return segmentedControl
+    }()
     
     let tableView: UITableView = {
         let table = UITableView()
@@ -28,6 +36,12 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
         return stackView
     }()
 
+    let filterButtonsContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -39,6 +53,9 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
         tableView.dataSource = self
         tableView.frame = view.bounds
 
+        view.addSubview(filterSegmentedControl)
+        filterSegmentedControl.frame = CGRect(x: 16, y: 100, width: view.frame.width - 32, height: 30)
+
         view.addSubview(stackView)
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -47,11 +64,30 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
+        filterButtonsContainer.addSubview(filterSegmentedControl)
+        NSLayoutConstraint.activate([
+            filterSegmentedControl.leadingAnchor.constraint(equalTo: filterButtonsContainer.leadingAnchor, constant: 16),
+            filterSegmentedControl.trailingAnchor.constraint(equalTo: filterButtonsContainer.trailingAnchor, constant: -16),
+            filterSegmentedControl.topAnchor.constraint(equalTo: filterButtonsContainer.topAnchor, constant: 20),
+            filterSegmentedControl.bottomAnchor.constraint(equalTo: filterButtonsContainer.bottomAnchor, constant: -20)
+        ])
+
+        stackView.addArrangedSubview(filterButtonsContainer)
         stackView.addArrangedSubview(tableView)
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
     }
 
+    @objc private func filterSegmentChanged(_ sender: UISegmentedControl) {
+        if sender.selectedSegmentIndex == 0 {
+            // Show all items
+            getAllItems()
+        } else {
+            // Show tasks for today
+            getTodayItems()
+        }
+    }
+    
      @objc private func textFieldDidChange(_ textField: UITextField) {
         guard let alertController = presentedViewController as? UIAlertController,
               let submitAction = alertController.actions.last else {
@@ -151,6 +187,37 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
     }
 
     // MARK: Core Data functions
+
+    func getTodayItems() {
+        let fetchRequest: NSFetchRequest<ToDoListItem> = ToDoListItem.fetchRequest()
+        
+        let calendar = Calendar.current
+        let startDate = calendar.startOfDay(for: Date())
+        let endDate = calendar.date(byAdding: .day, value: 1, to: startDate)!
+        
+        fetchRequest.predicate = NSPredicate(format: "createdAt >= %@ AND createdAt < %@", startDate as NSDate, endDate as NSDate)
+        
+        do {
+            models = try context.fetch(fetchRequest)
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        } catch {
+            // Handle error
+        }
+    }
+
+    func getAllItems() {
+        do {
+            models = try context.fetch(ToDoListItem.fetchRequest())
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+        catch {
+            // error
+        }
+    }
     
     func createItem(name: String) {
         let newItem = ToDoListItem(context: context)
