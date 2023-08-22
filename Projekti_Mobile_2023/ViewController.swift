@@ -6,6 +6,17 @@
 //
 
 import UIKit
+import CoreData
+
+extension UIColor {
+    static var lightGray: UIColor {
+        return UIColor(red: 0.85, green: 0.85, blue: 0.85, alpha: 1.0)
+    }
+    
+    static var lightGreen: UIColor {
+        return UIColor(red: 0.78, green: 0.95, blue: 0.78, alpha: 1.0)
+    }
+}
 
 class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSource {
 
@@ -42,6 +53,50 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
         return view
     }()
 
+    let legendContainerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let legendLabelToday: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Today tasks"
+        label.textColor = .black // Customize the text color
+        label.font = UIFont.boldSystemFont(ofSize: 14)
+        return label
+    }()
+    
+    let legendLabelPastDays: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Previous tasks"
+        label.textColor = .black // Customize the text color
+        label.font = UIFont.boldSystemFont(ofSize: 14)
+        return label
+    }()
+    
+    let dotToday: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .systemGreen // Customize the dot color
+        view.layer.cornerRadius = 4
+        view.widthAnchor.constraint(equalToConstant: 8).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 8).isActive = true
+        return view
+    }()
+    
+    let dotPastDays: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .systemGray // Customize the dot color
+        view.layer.cornerRadius = 4
+        view.widthAnchor.constraint(equalToConstant: 8).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 8).isActive = true
+        return view
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -53,6 +108,27 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
         tableView.dataSource = self
         tableView.frame = view.bounds
 
+        // Add the legend labels to the legendContainerView
+        legendContainerView.addSubview(dotToday)
+        legendContainerView.addSubview(legendLabelToday)
+        legendContainerView.addSubview(dotPastDays)
+        legendContainerView.addSubview(legendLabelPastDays)
+        
+        
+        // Position the dot views and labels using constraints
+        NSLayoutConstraint.activate([
+            dotToday.leadingAnchor.constraint(equalTo: legendContainerView.leadingAnchor, constant: 16),
+            dotToday.centerYAnchor.constraint(equalTo: legendLabelToday.centerYAnchor),
+            legendLabelToday.leadingAnchor.constraint(equalTo: dotToday.trailingAnchor, constant: 8),
+            legendLabelToday.topAnchor.constraint(equalTo: legendContainerView.topAnchor, constant: 143),
+            dotPastDays.leadingAnchor.constraint(equalTo: legendLabelToday.trailingAnchor, constant: 16),
+            dotPastDays.centerYAnchor.constraint(equalTo: legendLabelPastDays.centerYAnchor),
+            legendLabelPastDays.leadingAnchor.constraint(equalTo: dotPastDays.trailingAnchor, constant: 8),
+            legendLabelPastDays.topAnchor.constraint(equalTo: legendLabelToday.topAnchor),
+            legendLabelPastDays.bottomAnchor.constraint(equalTo: legendLabelToday.bottomAnchor),
+            
+        ])
+        
         view.addSubview(filterSegmentedControl)
         filterSegmentedControl.frame = CGRect(x: 16, y: 100, width: view.frame.width - 32, height: 30)
 
@@ -72,6 +148,7 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
             filterSegmentedControl.bottomAnchor.constraint(equalTo: filterButtonsContainer.bottomAnchor, constant: -20)
         ])
 
+        stackView.addArrangedSubview(legendContainerView)
         stackView.addArrangedSubview(filterButtonsContainer)
         stackView.addArrangedSubview(tableView)
 
@@ -144,6 +221,14 @@ class ViewController: UIViewController,  UITableViewDelegate, UITableViewDataSou
             containerView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 30),
             containerView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -30),
         ])
+
+         // Check if createdAt date is today
+        if let createdAt = model.createdAt,
+           Calendar.current.isDateInToday(createdAt) {
+            cell.backgroundColor = .lightGreen
+        } else {
+            cell.backgroundColor = .lightGray
+        }
         
         return cell
     }
