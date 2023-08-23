@@ -14,3 +14,16 @@ To Do List App është një aplikacion i thjeshtë, si nismë e programimit të 
 - Interface i përdorur për krijimin e layouts është Storyboard,
 - LifeCycle: UIKit App Delegate
 - Për krijimin e databazës së brendshme kam perdorur opsionin CoreData.
+
+## Logjika e funksionimit të aplikacionit
+- Aplikacioni përmban dy Controllera për trajtimin e 'View'-ave të cilat funksionalizohen përmes metodave dhe funksioneve të ndryshme brenda klasës së Controller-ave.
+- Controlleri i parë 'HomeViewController' trajton 'Welcome Page' të aplikacionit, e cila shfaq një mesazh dhe na mundëson që përmes një butoni të navigojme te main page.
+- Controlleri i dytë 'ViewController' përmban klasën përkatëse që mundëson krijimin e logjikës kryesore të aplikacionit përmes funksioneve të saj.
+- Në 'View Controller' përfshihen funksionet për krijimin, editimin, dhe fshirjen e taskave të ditës që përfshihen në To Do List.
+- Të dhënat që krijohen paraqiten si rreshta të një TableView.
+- Ekziston mundësia e filtrimit të rreshtave përmes butonave 'Previous Tasks' dhe 'Today Tasks' që filtrojne rreshtat në baze të datës.
+- Rreshtat qe krijohen ruhen në databazën e brendshme në entititetin 'ToDoListItem' që përmban atributet 'name' dhe 'createdAt'.
+- Name: ruan të dhënat e krijuara si String në databazë.
+- CreatedAt: ruan datën kur janë krijuar ato të dhëna
+- Rreshtat e tableView paraqiten me dizajn.
+- Me ngjyrë të gjelbër janë rreshtat që paraqesin të dhënat për filtrin 'Today', ndërsa me ngjyre hiri paraqiten të dhënat për filtrin 'Previous Tasks'.
